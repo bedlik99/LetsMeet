@@ -11,6 +11,7 @@ import org.json.simple.parser.ParseException;
 
 import java.io.File;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -31,7 +32,7 @@ public abstract class Data {
 
     private static DurationOfAppointment durationOfAppointment;
 
-    public static JsonNode readJson(String src) throws IOException {
+    public static JsonNode readJson(String src) throws IOException{
         return mapper.readTree(src);
     }
 
@@ -58,7 +59,8 @@ public abstract class Data {
      * Metoda wczytujaca dane wejsciowe z konkretnych plikow wejsciowych
      * @param fileName Nazwa pliku wejsciowego
      */
-    public static void loadCalendar(String fileName) {
+    public static void loadCalendar(String fileName)  {
+
 
         try {
             URL res = Data.class.getResource("/" + fileName);
@@ -79,7 +81,7 @@ public abstract class Data {
                 durationOfAppointment = fromJson(node, DurationOfAppointment.class);
             }
 
-        } catch (IOException | ParseException | URISyntaxException e) {
+        } catch (ParseException | URISyntaxException |IOException e) {
 
             e.printStackTrace();
         }

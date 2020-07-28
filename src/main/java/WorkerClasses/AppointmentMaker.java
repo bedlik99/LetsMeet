@@ -2,7 +2,9 @@ package WorkerClasses;
 
 import DataModel.Data;
 import DataModel.ModelClasses.ImportantHours;
+import com.sun.security.auth.NTUserPrincipal;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ public class AppointmentMaker {
     /**
      * Czas trwania spotkania
      */
-    private final String meeting_duration;
+    private String meeting_duration;
 
     /**
      * Czas pracy 1-szego pracownika
@@ -70,9 +72,9 @@ public class AppointmentMaker {
      * @param calendar1  Nazwa pliku z kalendarzaem 1-szego pracownika
      * @param calendar2  Nazwa pliku kalendarzem 2-ego pracownika
      * @param meetingDur Nazwa pliku z informacja o dlugosci spotkania
-     * @throws ParseException
      */
-    public AppointmentMaker(String calendar1, String calendar2, String meetingDur) throws ParseException {
+    public AppointmentMaker(String calendar1, String calendar2, String meetingDur) {
+
         Data.loadCalendar(calendar1);
         Data.loadCalendar(calendar2);
         Data.loadCalendar(meetingDur);
@@ -91,10 +93,8 @@ public class AppointmentMaker {
      * Metoda pracujaca na listach zawierajacych okresy czasowe, w ktorych pracownicy maja wolne
      * Metoda wyszukuje czasy rozpoczecia wolnych okresow u obu osob i przy pomocy innych funkcji posrednio
      * tworzy Liste odpowiednich czasow spotkan
-     *
-     * @throws ParseException Wyjatek dotyczacy parsowania formatu Daty na obiekt typu String
      */
-    public void showAvailableTimes() throws ParseException {
+    public void showAvailableTimes() {
         // Wypelniam zmienne freeTime1, freeTime2 - wolnymi przedzialami czasu odpowiednich pracownikow
         makeFreeTimeSchedule(working_hours1, planned_meeting1, freeTime1);
         makeFreeTimeSchedule(working_hours2, planned_meeting2, freeTime2);
@@ -140,20 +140,17 @@ public class AppointmentMaker {
      *
      * @param howManyMeetings Liczba calkowita okreslajaca ile razy okresy spotkan zmieszcza sie w konkretnym przedziale czasowym
      * @param start           String okreslajacy czas rozpoczecia
-     * @throws ParseException Wyjatek dotyczacy parsowania formatu Daty na obiekt typu String
      */
-    public void addPossibleMeetingTime(long howManyMeetings, String start) throws ParseException {
+    public void addPossibleMeetingTime(long howManyMeetings, String start) {
 
-        String earlierWorkingHours = working_hours1.getEnd().compareTo(working_hours2.getEnd()) <= 0 ? working_hours1.getEnd() : working_hours2.getEnd();
-        String expectedEnd = formatTime(addDurationToTime(start, howManyMeetings));
+            String earlierWorkingHours = working_hours1.getEnd().compareTo(working_hours2.getEnd()) <= 0 ? working_hours1.getEnd() : working_hours2.getEnd();
+            String expectedEnd = formatTime(addDurationToTime(start, howManyMeetings));
 
-        if (expectedEnd.compareTo(earlierWorkingHours) < 0) {
-            availableTimes.add(new ImportantHours(start, expectedEnd));
-        } else {
-            availableTimes.add(new ImportantHours(start, earlierWorkingHours));
-        }
-
-
+            if (expectedEnd.compareTo(earlierWorkingHours) < 0) {
+                availableTimes.add(new ImportantHours(start, expectedEnd));
+            } else {
+                availableTimes.add(new ImportantHours(start, earlierWorkingHours));
+            }
     }
 
     /**
@@ -164,16 +161,23 @@ public class AppointmentMaker {
      * @param time    Czas startowy
      * @param howMany Calkowita liczba, mowiaca o calkowitych wielokrotnosciach czasu trwania spotkania
      * @return Czas koncowy
-     * @throws ParseException Wyjatek dotyczacy parsowania formatu Daty na obiekt typu String
      */
-    public String addDurationToTime(String time, long howMany) throws ParseException {
-        Date date = format.parse(time);
-        long timeInMinutes = (date.getTime() / 60000) + 60;
-        long newTimeInMinutes = timeInMinutes + durationInMinutes * howMany;
+    public String addDurationToTime(String time, long howMany) {
 
-        return (newTimeInMinutes / 60 + ":" + newTimeInMinutes % 60);
+        try {
+            Date date = format.parse(time);
+            long timeInMinutes = (date.getTime() / 60000) + 60;
+            long newTimeInMinutes = timeInMinutes + durationInMinutes * howMany;
+
+            return (newTimeInMinutes / 60 + ":" + newTimeInMinutes % 60);
+
+        }catch (ParseException | NullPointerException e){
+            System.out.println(e.getMessage());
+            return "PARSE ERROR";
+        }
+
+
     }
-
 
     /**
      * Funkcja wyliczajaca czy w danych przedzialach czasowych mozliwe jest stworzenie spotkania o zadanej dlugosci
@@ -181,74 +185,100 @@ public class AppointmentMaker {
      * @param time1 Czas startowy
      * @param time2 Czas koncowy
      * @return zwaraca calkowita wielokrotnosc(zaokroglana do calosci) ; np. >1 to znaczy ze uda sie utworzyc spotkanie , 0 - znaczy ze nie uda sie
-     * @throws ParseException Wyjatek dotyczacy parsowania formatu Daty na obiekt typu String
      */
-    public long isDuration(String time1, String time2) throws ParseException {
-        Date date1 = format.parse(time1);
-        Date date2 = format.parse(time2);
+    public long isDuration(String time1, String time2) {
+        try {
+            Date date1 = format.parse(time1);
+            Date date2 = format.parse(time2);
 
-        long firstTime = (date1.getTime() / 60000) + 60; // w minutach
-        long secondTime = (date2.getTime() / 60000) + 60; // w minutach
+            long firstTime = (date1.getTime() / 60000) + 60; // w minutach
+            long secondTime = (date2.getTime() / 60000) + 60; // w minutach
 
-        long newTime = secondTime - firstTime;
-        long howManyMeetings = newTime / durationInMinutes;
+            long newTime = secondTime - firstTime;
+            long howManyMeetings = newTime / durationInMinutes;
 
-        if (newTime >= durationInMinutes) {
-            return howManyMeetings;
+            if (newTime >= durationInMinutes) {
+                return howManyMeetings;
+            }
 
+        } catch (ParseException | NullPointerException e) {
+            System.out.println("ERROR: " + e.getMessage());
         }
-        return 0;
 
+        return 0; // zero spotkan
     }
 
     /**
      * Funkcja wyliczajaca minuty z podanego czasu trwania spotkania
+     *
      * @return Czas trwania spotkania w minutach
-     * @throws ParseException Wyjatek dotyczacy parsowania formatu Daty na obiekt typu String
      */
-    public long durationToMinutes() throws ParseException {
+    public long durationToMinutes() {
 
-        Date date = format.parse(formatTime(meeting_duration));
-        return (date.getTime() / 60000 + 60); // w minutach
+        try {
+            Date date = format.parse(formatTime(meeting_duration));
+            return (date.getTime() / 60000 + 60); // w minutach
+        } catch (ParseException e) {
+
+            System.out.println(e.getMessage());
+            return -1L;
+        }
 
     }
 
 
     /**
      * Funkcja formatujaca czas na odpowiednio wypelniony zerami
+     *
      * @param calendarTime dowolny czas w formacie HH:mm
      * @return sformatowany string czasu
      */
     public String formatTime(String calendarTime) {
 
-        if (calendarTime.length() != 5) {
+        if (calendarTime == null)
+            return "UNKNOWN FORMAT";
 
-            if (calendarTime.length() == 3) {
+        if (calendarTime.trim().length() != 5) {
+
+            if (calendarTime.matches("[0-9]:[0-9]")) {
                 calendarTime = "0" + calendarTime + "0";
-            } else if (calendarTime.length() == 4 && calendarTime.charAt(1) == ':') {
+                return calendarTime;
+
+            } else if (calendarTime.length() == 3) {
+                return "PARSE ERROR";
+
+            } else if (calendarTime.matches("[0-9]:[0-9][0-9]")) {
                 calendarTime = "0" + calendarTime;
-            } else {
+                return calendarTime;
+
+            } else if (calendarTime.matches("[0-9][0-9]:[0-9]")) {
                 calendarTime = calendarTime + "0";
+                return calendarTime;
+
             }
-            return calendarTime;
+
+                return "PARSE ERROR";
+
         }
 
+        if(calendarTime.matches("[0-9][0-9]:[0-9][0-9]"))
         return calendarTime;
-    }
 
 
+        return "PARSE ERROR";
+}
 
 
     /**
-     *  Funkcja tworzy liste z czasami ktore odpowiadaja przedzialom WOLNEGO czasu pracownika w danym dniu
-     *  Lista stworzona, jest wykorzystywana do znalezienia czasu wolnego dla obu pracownikow i o odpowiedniej dlugosci czasowej.
-     * @param working_hours Czas trwania pracy pracownika
+     * Funkcja tworzy liste z czasami ktore odpowiadaja przedzialom WOLNEGO czasu pracownika w danym dniu
+     * Dtworzona lista jest wykorzystywana do znalezienia czasu wolnego dla obu pracownikow i o odpowiedniej dlugosci czasowej.
+     *
+     * @param working_hours   Czas trwania pracy pracownika
      * @param planned_meeting Okresy czasowe na ktorych zaplanowane są juz spotkania pracownika
-     * @param freeTime Okresy czasowe wolne od pracy  danego pracownika
-     * @throws ParseException Wyjatek dotyczacy parsowania formatu Daty na obiekt typu String
+     * @param freeTime        Okresy czasowe wolne od pracy  danego pracownika
      */
     private void makeFreeTimeSchedule(ImportantHours working_hours,
-                                      List<ImportantHours> planned_meeting, List<ImportantHours> freeTime) throws ParseException {
+                                      List<ImportantHours> planned_meeting, List<ImportantHours> freeTime) {
 
         //Szukamy wolnego czasu miedzy czasem rozpoczecia pracy i pierwszym terminem zaplanowanym
         if (!working_hours.getStart().equals(planned_meeting.get(0).getStart()) &&
@@ -256,7 +286,7 @@ public class AppointmentMaker {
             freeTime.add(new ImportantHours(working_hours.getStart(), planned_meeting.get(0).getStart()));
         }
 
-        // Petla szuka wolne czasy miedzy terminami zaplanowanymi
+        // W pętli szukane są wolne czasy miedzy terminami zaplanowanymi
         for (int i = 0; i <= planned_meeting.size() - 2; i++) {
             if (!planned_meeting.get(i).getEnd().equals(planned_meeting.get(i + 1).getStart())
                     && isDuration(planned_meeting.get(i).getEnd(), planned_meeting.get(i + 1).getStart()) != 0) {
@@ -273,6 +303,52 @@ public class AppointmentMaker {
             freeTime.add(new ImportantHours(planned_meeting.get(planned_meeting.size() - 1).getEnd(), working_hours.getEnd()));
         }
 
+    }
+
+
+    public void setMeeting_duration(String meetDur){
+        meeting_duration = meetDur;
+    }
+    // LISTA GETTEROW - UZYWANE W TESTACH
+    public String getMeeting_duration() {
+        return meeting_duration;
+    }
+
+
+    public ImportantHours getWorking_hours1() {
+        return working_hours1;
+    }
+
+    public List<ImportantHours> getPlanned_meeting1() {
+        return planned_meeting1;
+    }
+
+    public List<ImportantHours> getFreeTime1() {
+        return freeTime1;
+    }
+
+    public ImportantHours getWorking_hours2() {
+        return working_hours2;
+    }
+
+    public List<ImportantHours> getPlanned_meeting2() {
+        return planned_meeting2;
+    }
+
+    public List<ImportantHours> getFreeTime2() {
+        return freeTime2;
+    }
+
+    public List<ImportantHours> getAvailableTimes() {
+        return availableTimes;
+    }
+
+    public SimpleDateFormat getFormat() {
+        return format;
+    }
+
+    public long getDurationInMinutes() {
+        return durationInMinutes;
     }
 
 
