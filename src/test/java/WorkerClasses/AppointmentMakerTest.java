@@ -86,7 +86,7 @@ public class AppointmentMakerTest {
         String in_str1 = "03:33";
         String in_str2 = null;
 
-        assertEquals(-1, maker.isDuration(in_str1, in_str2));
+        assertEquals(0, maker.isDuration(in_str1, in_str2));
 
     }
 
@@ -95,7 +95,7 @@ public class AppointmentMakerTest {
         String in_str1 = "WRONG FORMAT";
         String in_str2 = "12:35";
 
-        assertEquals(-1, maker.isDuration(in_str1, in_str2));
+        assertEquals(0, maker.isDuration(in_str1, in_str2));
 
     }
 
@@ -136,7 +136,7 @@ public class AppointmentMakerTest {
     @Test
     public void formatTime_Test_ZERO() {
         String result = maker.formatTime("");
-        assertEquals("0", result);
+        assertEquals("PARSE ERROR", result);
     }
 
     @Test
