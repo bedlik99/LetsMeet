@@ -14,7 +14,6 @@ Pliki wejściowe:
 
 Do uruchomienia aplikacji:
 ```bash
-mvn compile
 mvn exec:java
 ```
 
