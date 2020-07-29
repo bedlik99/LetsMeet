@@ -3,7 +3,7 @@ Wersja Javy: 11
 Użyte narzędzie do budowania projektów: Maven. 
 Wersja Maven 3.8.1. 
 
-Pliki wejSciowe:
+Pliki wejsciowe:
 
 /src/main/resources/Calendar1.json - plik wejsciowy z kalendarzem 1-szym
 
@@ -13,9 +13,7 @@ Pliki wejSciowe:
 
 
 Do uruchomienia aplikacji:
-```basz
-
-mvn exek:java
-```
-
-
+```bash  
+mvn compile  
+mvn exec:java  
+```  
