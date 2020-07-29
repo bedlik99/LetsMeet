@@ -2,7 +2,6 @@ package WorkerClasses;
 
 import DataModel.ModelClasses.ImportantHours;
 import org.junit.Test;
-
 import java.text.ParseException;
 import java.util.Date;
 
