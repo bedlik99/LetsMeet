@@ -63,7 +63,7 @@ public class AppointmentMaker {
     /**
      * Czas trwania spoktania podany w minutach
      */
-    private final long durationInMinutes;
+    private long durationInMinutes;
 
 
     /**
@@ -137,7 +137,6 @@ public class AppointmentMaker {
 
     /**
      * Metoda inicjalizujaca liste 'availableTimes' z okresami czasowymi w ktorych pracownicy moga odbyc spotkanie
-     *
      * @param howManyMeetings Liczba calkowita okreslajaca ile razy okresy spotkan zmieszcza sie w konkretnym przedziale czasowym
      * @param start           String okreslajacy czas rozpoczecia
      */
@@ -305,15 +304,19 @@ public class AppointmentMaker {
 
     }
 
+    // LISTA GETTEROW/SETTEROW - UZYWANE W TESTACH
 
     public void setMeeting_duration(String meetDur){
         meeting_duration = meetDur;
     }
-    // LISTA GETTEROW - UZYWANE W TESTACH
+
     public String getMeeting_duration() {
         return meeting_duration;
     }
 
+    public void setDurationInMinutes(long durationInMinutes) {
+        this.durationInMinutes = durationInMinutes;
+    }
 
     public ImportantHours getWorking_hours1() {
         return working_hours1;

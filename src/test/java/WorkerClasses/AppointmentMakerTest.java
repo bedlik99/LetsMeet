@@ -1,8 +1,8 @@
 package WorkerClasses;
 
+import DataModel.ModelClasses.ImportantHours;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -10,20 +10,103 @@ import static org.junit.Assert.*;
 
 public class AppointmentMakerTest {
 
-    private AppointmentMaker maker;
+    private static AppointmentMaker maker;
+    private AppointmentMaker makerTemp;
 
-    @org.junit.Before
-    public void setup() {
+    @org.junit.BeforeClass
+    public static void beforeClass() {
         maker = new AppointmentMaker("Calendar1.json", "Calendar2.json", "TimeDuration.json");
 
         System.out.println("Running tests...");
     }
 
+    @org.junit.Before
+    public void setup(){
+         makerTemp = new AppointmentMaker("Calendar1.json", "Calendar2.json", "TimeDuration.json");
+    }
+
+
+    @Test
+    public void addPossibleMeetingTime_Test_EXAMPLE() {
+
+        if(makerTemp.getWorking_hours1().getEnd().compareTo(
+                makerTemp.getWorking_hours2().getEnd()) > 0) {
+            System.out.println("Leaving office hour: " + makerTemp.getWorking_hours2().getEnd());
+        }else {
+            System.out.println("Leaving office hour: " + makerTemp.getWorking_hours1().getEnd());
+
+        }
+
+
+        System.out.println("Duration of meeting[min]: " + makerTemp.getDurationInMinutes());
+        int[] howMany = {1,3,5,2,4,6};
+        int i =0;
+
+        makerTemp.addPossibleMeetingTime(howMany[0],"10:30");
+        makerTemp.addPossibleMeetingTime(howMany[1],"14:00");
+        makerTemp.addPossibleMeetingTime(howMany[2],"2:30");
+
+        if(makerTemp.getWorking_hours1().getEnd().compareTo(
+                makerTemp.getWorking_hours2().getEnd()) > 0) {
+            System.out.println("Leaving office hour(MAX HOUR): " + makerTemp.getWorking_hours2().getEnd());
+
+        }else {
+            System.out.println("Leaving office hour(MAX HOUR): " + makerTemp.getWorking_hours1().getEnd());
+        }
+
+        System.out.println("1. Possible times: " + makerTemp.getAvailableTimes().size());
+        for(ImportantHours el: makerTemp.getAvailableTimes()){
+            System.out.print(el.toString() + " --> " + howMany[i] + "x"+makerTemp.getDurationInMinutes()+"min");
+            if( el.getEnd().equals(makerTemp.getWorking_hours2().getEnd())){
+                System.out.print("  +  " + "End time equals Leaving office hour: " + makerTemp.getWorking_hours2().getEnd());
+            }else if( el.getEnd().equals(makerTemp.getWorking_hours1().getEnd())){
+                System.out.print("  +  " + "End time equals Leaving office hour: " + makerTemp.getWorking_hours1().getEnd());
+            }
+            System.out.println();
+            i++;
+        }
+
+        assertEquals(3, makerTemp.getAvailableTimes().size());
+
+
+
+        makerTemp.getAvailableTimes().clear();
+        System.out.println("\n");
+
+        makerTemp.setMeeting_duration("01:15");
+        makerTemp.setDurationInMinutes(makerTemp.durationToMinutes());
+
+        if(makerTemp.getWorking_hours1().getEnd().compareTo(
+                makerTemp.getWorking_hours2().getEnd()) > 0) {
+            System.out.println("Leaving office hour: " + makerTemp.getWorking_hours2().getEnd());
+        }else {
+            System.out.println("Leaving office hour: " + makerTemp.getWorking_hours1().getEnd());
+
+        }
+
+        System.out.println("Duration of meeting[min]: " + makerTemp.getDurationInMinutes());
+      makerTemp.addPossibleMeetingTime(howMany[3],"09:55");
+      makerTemp.addPossibleMeetingTime(howMany[4],"16:15");
+      makerTemp.addPossibleMeetingTime(howMany[5],"14:30");
+
+        System.out.println("Another 3 possible times: " + makerTemp.getAvailableTimes().size());
+        for(ImportantHours el: makerTemp.getAvailableTimes()){
+            System.out.println(el.toString() + " --> " + howMany[i] + "x"+makerTemp.getDurationInMinutes()+"min");
+            if(el.getEnd().equals(makerTemp.getWorking_hours2().getEnd())){
+                System.out.println("  +  " + "End time equals Leaving office hour: " + makerTemp.getWorking_hours2().getEnd());
+            }else if(el.getEnd().equals(makerTemp.getWorking_hours1().getEnd())){
+                System.out.println("  +  " + "End time equals Leaving office hour: " + makerTemp.getWorking_hours1().getEnd());
+            }
+            i++;
+        }
+
+        assertEquals(3, makerTemp.getAvailableTimes().size());
+    }
 
     @Test
     public void addDurationToTime_Test_EXAMPLE() {
         String time = "11:00";
-        long howMany = 0;
+        long howMany = 1;
         Date date = new Date();
         try {
             date = maker.getFormat().parse(time);
@@ -102,7 +185,6 @@ public class AppointmentMakerTest {
 
     @Test
     public void durationToMinutes_Test_WRONG_FORMAT() {
-        AppointmentMaker makerTemp = new AppointmentMaker("Calendar1.json", "Calendar2.json", "TimeDuration.json");
 
         makerTemp.setMeeting_duration("NO DATE FORMAT");   // nie moze przeparsowac i rzuca wyjatek
         assertEquals(-1, makerTemp.durationToMinutes());
@@ -110,7 +192,6 @@ public class AppointmentMakerTest {
 
     @Test
     public void durationToMinutes_Test_NULL() {
-        AppointmentMaker makerTemp = new AppointmentMaker("Calendar1.json", "Calendar2.json", "TimeDuration.json");
 
         makerTemp.setMeeting_duration(null);            // nie moze przeparsowac i rzuca wyjatek
         assertEquals(-1, makerTemp.durationToMinutes());
@@ -118,7 +199,6 @@ public class AppointmentMakerTest {
 
     @Test
     public void durationToMinutes_Test_EXAMPLE() {
-        AppointmentMaker makerTemp = new AppointmentMaker("Calendar1.json", "Calendar2.json", "TimeDuration.json");
 
         makerTemp.setMeeting_duration("2:10");
         Date date = new Date();
@@ -128,10 +208,8 @@ public class AppointmentMakerTest {
             System.out.println(e.getMessage());
         }
         long expected = (date.getTime() / 60000 + 60);
-        System.out.println(expected);
         assertEquals(expected, makerTemp.durationToMinutes());
     }
-
 
     @Test
     public void formatTime_Test_ZERO() {
